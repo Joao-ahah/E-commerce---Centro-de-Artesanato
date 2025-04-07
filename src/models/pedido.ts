@@ -28,7 +28,7 @@ export interface IPagamento {
   comprovante?: string;
 }
 
-export interface IPedido extends Document {
+export interface IPedidoBase {
   numero: string;
   usuario: Schema.Types.ObjectId;
   nomeCliente: string;
@@ -54,7 +54,7 @@ export interface IPedido extends Document {
   dataEntrega?: Date;
   isNew?: boolean; // Propriedade do mongoose
 }
-
+export interface IPedido extends Document, IPedidoBase {}
 const ItemPedidoSchema = new Schema({
   produto: { type: Schema.Types.ObjectId, ref: 'Produto', required: true },
   nomeProduto: { type: String, required: true },
@@ -141,7 +141,8 @@ const PedidoSchema: Schema = new Schema(
 
 // Geração de número de pedido antes de salvar
 PedidoSchema.pre('save', async function(next) {
-  const pedido = this as IPedido;
+  // Usar casting seguro com unknown intermediário
+  const pedido = this as unknown as IPedido;
   
   if (!pedido.isNew) return next();
   
