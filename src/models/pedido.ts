@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Schema, Document, Model } from 'mongoose';
 
 // Definindo a interface IEndereco localmente em vez de importá-la
 export interface IEndereco {
@@ -10,6 +10,7 @@ export interface IEndereco {
   cidade: string;
   estado: string;
 }
+
 export interface IItemPedido {
   produto: Schema.Types.ObjectId;
   nomeProduto: string;
@@ -28,7 +29,8 @@ export interface IPagamento {
   comprovante?: string;
 }
 
-export interface IPedidoBase {
+// Interface para o documento do pedido - sem estender Document
+export interface IPedidoData {
   numero: string;
   usuario: Schema.Types.ObjectId;
   nomeCliente: string;
@@ -52,9 +54,11 @@ export interface IPedidoBase {
   dataCancelamento?: Date;
   dataEnvio?: Date;
   dataEntrega?: Date;
-  isNew?: boolean; // Propriedade do mongoose
 }
-export interface IPedido extends Document, IPedidoBase {}
+
+// Combinamos nossos dados com o tipo Document do Mongoose
+export type IPedido = IPedidoData & Document;
+
 const ItemPedidoSchema = new Schema({
   produto: { type: Schema.Types.ObjectId, ref: 'Produto', required: true },
   nomeProduto: { type: String, required: true },
@@ -92,7 +96,7 @@ const EnderecoEntregaSchema = new Schema({
   estado: { type: String, required: true }
 });
 
-const PedidoSchema: Schema = new Schema(
+const PedidoSchema = new Schema(
   {
     numero: { 
       type: String, 
@@ -140,20 +144,14 @@ const PedidoSchema: Schema = new Schema(
 );
 
 // Geração de número de pedido antes de salvar
-PedidoSchema.pre('save', async function(next) {
-  // Usar casting seguro com unknown intermediário
-  const pedido = this as unknown as IPedido;
-  
-  if (!pedido.isNew) return next();
-  
-  try {
+PedidoSchema.pre('save', function(next) {
+  // Não é necessário fazer type casting já que estamos dentro de um hook do Mongoose
+  if (this.isNew) {
     // Gera número do pedido com prefixo ART + timestamp
     const timestamp = Date.now().toString();
-    pedido.numero = `ART${timestamp.substr(-8)}`;
-    next();
-  } catch (error: any) {
-    next(error);
+    this.numero = `ART${timestamp.substr(-8)}`;
   }
+  next();
 });
 
 // Índices compostos para consultas comuns
@@ -162,4 +160,7 @@ PedidoSchema.index({ dataRegistro: -1 });
 PedidoSchema.index({ status: 1, dataRegistro: -1 });
 
 // Evitar a redefinição do modelo durante hot reloads em desenvolvimento
-export default mongoose.models.Pedido || mongoose.model<IPedido>('Pedido', PedidoSchema); 
+const PedidoModel = (mongoose.models.Pedido as Model<IPedido>) || 
+  mongoose.model<IPedido>('Pedido', PedidoSchema);
+
+export default PedidoModel; 
