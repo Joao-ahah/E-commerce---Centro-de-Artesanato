@@ -1,7 +1,19 @@
 import mongoose from 'mongoose';
 
+// Tipo para o objeto de cache global
+interface MongooseCache {
+  conn: typeof mongoose | null;
+  promise: Promise<typeof mongoose> | null;
+}
+
 // Variáveis globais para controlar o estado da conexão
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/centro-artesanato';
+
+// Declaração para o global
+declare global {
+  var mongoose: MongooseCache;
+}
+
 
 // Cache da conexão para manter durante o hot reload
 let cached = global.mongoose;
