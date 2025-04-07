@@ -3,7 +3,7 @@
  * Execute com: npx ts-node -r tsconfig-paths/register src/scripts/seed-produtos.ts
  */
 import mongoose from 'mongoose';
-import Produto, { IProduto } from '../models/produto';
+import { ProdutoModel as Produto, IProduto } from '../models/produto';
 import dbConnect from '../lib/db';
 
 // Produtos de exemplo para inserção
