@@ -52,6 +52,7 @@ export interface IPedido extends Document {
   dataCancelamento?: Date;
   dataEnvio?: Date;
   dataEntrega?: Date;
+  isNew?: boolean; // Propriedade do mongoose
 }
 
 const ItemPedidoSchema = new Schema({
