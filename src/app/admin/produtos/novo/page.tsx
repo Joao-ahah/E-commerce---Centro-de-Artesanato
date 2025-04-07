@@ -12,6 +12,7 @@ interface ProdutoForm {
   nome: string;
   descricao: string;
   preco: string;
+  precoPromocional: number;
   categoria: string;
   quantidade: string;
   destaque: boolean;
@@ -39,6 +40,7 @@ export default function NovoProdutoPage() {
     nome: '',
     descricao: '',
     preco: '',
+    precoPromocional: 0,
     categoria: '',
     quantidade: '1',
     destaque: false,
