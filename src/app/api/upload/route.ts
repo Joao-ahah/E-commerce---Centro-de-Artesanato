@@ -1,85 +1,71 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { join } from 'path';
+import { NextResponse } from 'next/server';
+import path from 'path';
 import { writeFile, mkdir } from 'fs/promises';
-import { existsSync } from 'fs';
 import { v4 as uuidv4 } from 'uuid';
 
-// Caminho para a pasta de uploads
-const uploadDir = join(process.cwd(), 'public', 'uploads');
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
-// Tamanho máximo de arquivo aceito (5MB)
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB em bytes
-
-// Tipos de arquivos aceitos
+const uploadDir = path.join(process.cwd(), 'public/uploads');
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const ALLOWED_FILE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 
-export async function POST(request: NextRequest) {
+export async function POST(request: Request) {
   try {
-    // Garantir que a pasta de uploads existe
-    if (!existsSync(uploadDir)) {
+    // Garantir que o diretório de upload existe
+    try {
       await mkdir(uploadDir, { recursive: true });
+    } catch (error) {
+      // Ignorar erro se o diretório já existir
     }
 
-    // Usar a FormData API do Next.js para processar uploads multipart/form-data
+    // Processar os dados da requisição
     const formData = await request.formData();
-    
-    // Encontrar o arquivo na requisição
-    const file = formData.get('file') as File | null;
-    
+    const file = formData.get('file') as File;
+
     if (!file) {
       return NextResponse.json(
-        { success: false, message: 'Nenhum arquivo foi enviado' },
+        { error: 'Nenhum arquivo foi enviado' },
         { status: 400 }
       );
     }
-    
+
     // Validar tipo de arquivo
     if (!ALLOWED_FILE_TYPES.includes(file.type)) {
       return NextResponse.json(
-        { success: false, message: 'Tipo de arquivo não permitido. Envie apenas imagens (JPEG, PNG, WEBP, GIF).' },
+        { error: 'Tipo de arquivo não permitido' },
         { status: 400 }
       );
     }
-    
+
     // Validar tamanho do arquivo
     if (file.size > MAX_FILE_SIZE) {
       return NextResponse.json(
-        { success: false, message: 'Arquivo muito grande. O tamanho máximo permitido é 5MB.' },
+        { error: 'Arquivo muito grande (máximo 5MB)' },
         { status: 400 }
       );
     }
-    
-    // Gerar nome de arquivo único para evitar colisões
-    const fileExtension = file.name.split('.').pop() || '';
+
+    // Gerar nome de arquivo único
+    const fileExtension = file.name.split('.').pop();
     const fileName = `${uuidv4()}.${fileExtension}`;
-    const filePath = join(uploadDir, fileName);
-    
-    // Converter o arquivo para ArrayBuffer e escrever no sistema de arquivos
-    const buffer = await file.arrayBuffer();
-    await writeFile(filePath, Buffer.from(buffer));
-    
-    // Gerar URL relativa para o arquivo
+    const filePath = path.join(uploadDir, fileName);
+
+    // Converter o arquivo em um Buffer
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+
+    // Salvar o arquivo
+    await writeFile(filePath, buffer);
+
+    // Retornar a URL relativa do arquivo
     const fileUrl = `/uploads/${fileName}`;
-    
-    return NextResponse.json({
-      success: true,
-      imageUrls: [fileUrl],
-      message: 'Arquivo enviado com sucesso'
-    });
-    
-  } catch (error: any) {
-    console.error('Erro no upload do arquivo:', error);
+    return NextResponse.json({ success: true, url: fileUrl });
+  } catch (error) {
+    console.error('Erro ao processar upload:', error);
     return NextResponse.json(
-      { success: false, message: `Erro ao processar upload: ${error.message}` },
+      { error: 'Erro ao processar o upload' },
       { status: 500 }
     );
   }
 }
-
-// Definir tamanho máximo de payload aceito
-export const config = {
-  api: {
-    bodyParser: false,
-    responseLimit: '10mb',
-  },
-}; 
