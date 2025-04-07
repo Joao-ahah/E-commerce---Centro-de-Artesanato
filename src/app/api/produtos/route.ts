@@ -2,6 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/dbConnect';
 import { ProdutoModel } from '@/models/produto';
 
+
+export const produtosSimulados = [
+  // Seus dados simulados aqui
+  // ...
+];
+
+
 // Função para simular tempo de resposta do servidor (opcional)
 const simularTempo = (ms: number = 500) => new Promise(resolve => setTimeout(resolve, ms));
 
