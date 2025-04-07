@@ -182,8 +182,8 @@ async function seedDatabase() {
       result.forEach((produto, index) => {
         console.log(`${index + 1}. ${produto.nome} - ID: ${produto._id}`);
       });
-    } else {
-      console.log(`1. ${result.nome} - ID: ${result._id}`);
+    } else if (result) {
+      console.log(`1. ${(result as IProduto).nome} - ID: ${(result as IProduto)._id}`);
     }
     
     // Desconectar do banco de dados
