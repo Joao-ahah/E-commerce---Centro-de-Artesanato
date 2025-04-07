@@ -18,6 +18,7 @@ export interface IUsuario extends Document {
   };
   isAdmin: boolean;
   ativo: boolean;
+  tipo: string; // 'admin' ou 'cliente'
   ultimoLogin?: Date;
   createdAt: Date;
   updatedAt: Date;
@@ -71,6 +72,11 @@ const UsuarioSchema = new Schema<IUsuario>({
   isAdmin: {
     type: Boolean,
     default: false
+  },
+  tipo: {
+    type: String,
+    enum: ['admin', 'cliente'],
+    default: 'cliente'
   },
   ativo: {
     type: Boolean,

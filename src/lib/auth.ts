@@ -14,7 +14,7 @@ export function gerarToken(usuario: IUsuario): string {
     id: usuario._id,
     email: usuario.email,
     nome: usuario.nome,
-    tipo: usuario.tipo
+    tipo: usuario.tipo || (usuario.isAdmin ? 'admin' : 'cliente')
   };
 
   return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRATION });
