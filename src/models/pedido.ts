@@ -1,6 +1,15 @@
 import mongoose, { Schema, Document } from 'mongoose';
-import { IEndereco } from './usuario';
 
+// Definindo a interface IEndereco localmente em vez de importá-la
+export interface IEndereco {
+  cep: string;
+  logradouro: string;
+  numero: string;
+  complemento?: string;
+  bairro: string;
+  cidade: string;
+  estado: string;
+}
 export interface IItemPedido {
   produto: Schema.Types.ObjectId;
   nomeProduto: string;
