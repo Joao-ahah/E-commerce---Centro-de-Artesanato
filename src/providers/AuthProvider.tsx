@@ -1,17 +1,18 @@
 'use client';
 
-import { createContext, useContext, ReactNode, useState, useEffect } from 'react';
-import { useAuth } from '@/hooks/useAuth';
+import { createContext, useContext, ReactNode } from 'react';
+import { useAuth, User } from '@/hooks/useAuth';
 
 // Contexto de autenticação
 interface AuthContextType {
   authenticated: boolean;
-  user: any | null;
+  user: User | null;
   loading: boolean;
-  error: string | null;
-  login: (email: string, senha: string, remember?: boolean) => Promise<boolean>;
-  register: (nome: string, email: string, senha: string) => Promise<boolean>;
+  login: (email: string, senha: string, lembrar?: boolean) => Promise<{ success: boolean; message?: string }>;
+  register: (userData: { nome: string; email: string; senha: string; telefone?: string }) => Promise<{ success: boolean; message?: string }>;
   logout: () => void;
+  requireAuth: (isAdminRequired?: boolean) => Promise<{ success: boolean; pending?: boolean; message?: string }>;
+  setAdminUser: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
